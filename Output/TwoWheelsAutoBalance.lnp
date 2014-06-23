@@ -1,0 +1,28 @@
+--cpu Cortex-M4.fp
+".\output\main.o"
+".\output\motordriver.o"
+".\output\motor.o"
+".\output\delay.o"
+".\output\stm32f4xx_it.o"
+".\output\encoder.o"
+".\output\pid_v1.o"
+".\output\stm32f4_discovery.o"
+".\output\stm32f4_discovery_lis302dl.o"
+".\output\misc.o"
+".\output\stm32f4xx_adc.o"
+".\output\stm32f4xx_dma.o"
+".\output\stm32f4xx_exti.o"
+".\output\stm32f4xx_gpio.o"
+".\output\stm32f4xx_i2c.o"
+".\output\stm32f4xx_rcc.o"
+".\output\stm32f4xx_spi.o"
+".\output\stm32f4xx_syscfg.o"
+".\output\stm32f4xx_tim.o"
+".\output\stm32f4xx_usart.o"
+".\output\startup_stm32f40_41xxx.o"
+".\output\system_stm32f4xx.o"
+".\output\stm32f4xx_flash.o"
+--library_type=microlib --strict --scatter ".\Output\TwoWheelsAutoBalance.sct"
+--summary_stderr --info summarysizes --map --xref --callgraph --symbols
+--info sizes --info totals --info unused --info veneers
+--list ".\Output\TwoWheelsAutoBalance.map" -o .\Output\TwoWheelsAutoBalance.axf
