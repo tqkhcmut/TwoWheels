@@ -41,6 +41,8 @@ class I2CDev
 		I2CDev();
 	void Init(void);
 	I2C_RESULT readBits(uint8_t devAddr, uint8_t regAddr, uint8_t bitMask, uint8_t * buf);
+	I2C_RESULT readBits(uint8_t devAddr, uint8_t regAddr, uint8_t bitStart, uint8_t bitLengh, uint8_t * buf);
+	I2C_RESULT readBit(uint8_t devAddr, uint8_t regAddr, uint8_t bitPos, uint8_t * buf);
 	I2C_RESULT readBytes(uint8_t devAddr, uint8_t regAddr, uint16_t count, uint8_t * buf);
 	I2C_RESULT writeBytes(uint8_t devAddr, uint8_t regAddr, uint16_t count, uint8_t * buf);
 	I2C_RESULT writeBits(uint8_t devAddr, uint8_t regAddr, uint8_t bitMask, uint8_t * buf);
