@@ -439,6 +439,16 @@
               <FileType>8</FileType>
               <FilePath>.\PID_v1.cpp</FilePath>
             </File>
+            <File>
+              <FileName>I2CDev.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>.\MPU6050\I2CDev.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>MPU6050.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>.\MPU6050\MPU6050.cpp</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

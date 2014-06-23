@@ -246,15 +246,15 @@ I2C_RESULT I2CDev::writeBytes(uint8_t devAddr, uint8_t regAddr, uint16_t count, 
 	return I2C_FAIL;
 }
 
-I2C_RESULT I2CDev::writeBits(uint8_t devAddr, uint8_t regAddr, uint8_t bitMask, uint8_t * buf)
+I2C_RESULT I2CDev::writeBits(uint8_t devAddr, uint8_t regAddr, uint8_t bitMask)
 {
 	// busy check
 	while(IsBusy);
 	
-	if (readBytes(devAddr, regAddr, 1, buf) == I2C_OK)
-		buf[0] |= bitMask;
+	if (readBytes(devAddr, regAddr, 1, buff) == I2C_OK)
+		buff[0] |= bitMask;
 	else return I2C_FAIL;
 	
-	return writeBytes(devAddr, regAddr, 1, buf);
+	return writeBytes(devAddr, regAddr, 1, buff);
 }
 

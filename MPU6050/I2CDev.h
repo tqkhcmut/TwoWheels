@@ -4,7 +4,7 @@
 #include <inttypes.h>
 #include "stm32f4xx.h"
 // if you have another system timer, comment line below then include it
-#include "delay.h"
+#include "../delay.h"
 
 #ifndef USE_I2C2
 #define USE_I2C2
@@ -42,10 +42,16 @@ class I2CDev
 	void Init(void);
 	I2C_RESULT readBits(uint8_t devAddr, uint8_t regAddr, uint8_t bitMask, uint8_t * buf);
 	I2C_RESULT readBits(uint8_t devAddr, uint8_t regAddr, uint8_t bitStart, uint8_t bitLengh, uint8_t * buf);
-	I2C_RESULT readBit(uint8_t devAddr, uint8_t regAddr, uint8_t bitPos, uint8_t * buf);
+	I2C_RESULT readBit(uint8_t devAddr, uint8_t regAddr, uint8_t bitPos, uint8_t * buf);	// level: high or low
 	I2C_RESULT readBytes(uint8_t devAddr, uint8_t regAddr, uint16_t count, uint8_t * buf);
+	I2C_RESULT readByte(uint8_t devAddr, uint8_t regAddr, uint8_t * buf);
 	I2C_RESULT writeBytes(uint8_t devAddr, uint8_t regAddr, uint16_t count, uint8_t * buf);
-	I2C_RESULT writeBits(uint8_t devAddr, uint8_t regAddr, uint8_t bitMask, uint8_t * buf);
+	I2C_RESULT writeByte(uint8_t devAddr, uint8_t regAddr, uint8_t _byte);
+	I2C_RESULT writeBits(uint8_t devAddr, uint8_t regAddr, uint8_t bitMask);
+	I2C_RESULT writeBits(uint8_t devAddr, uint8_t regAddr, uint8_t bitStart, uint8_t bitLengh, uint8_t data);
+	I2C_RESULT writeBit(uint8_t devAddr, uint8_t regAddr, uint8_t bitPos, uint8_t level);
+	I2C_RESULT readWord(uint8_t devAddr, uint8_t regAddr, uint16_t * data);
+	I2C_RESULT writeWord(uint8_t devAddr, uint8_t regAddr, uint16_t data);
 };
 
 #endif

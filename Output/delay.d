@@ -8,8 +8,8 @@
 .\output\delay.o: C:\Keil_v5\ARM\PACK\ARM\CMSIS\3.20.4\CMSIS\Include\core_cmFunc.h
 .\output\delay.o: C:\Keil_v5\ARM\PACK\ARM\CMSIS\3.20.4\CMSIS\Include\core_cm4_simd.h
 .\output\delay.o: C:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\1.0.7\Device\Include\system_stm32f4xx.h
-.\output\delay.o: D:\Sync Folders\Dropbox\Dropbox\KeilARM\Keil5\MDK5\RTE\Device\STM32F407VG\stm32f4xx_conf.h
-.\output\delay.o: D:\Sync Folders\Dropbox\Dropbox\KeilARM\Keil5\MDK5\RTE\RTE_Components.h
+.\output\delay.o: C:\Users\Kieu\Desktop\TwoWheels\RTE\Device\STM32F407VG\stm32f4xx_conf.h
+.\output\delay.o: C:\Users\Kieu\Desktop\TwoWheels\RTE\RTE_Components.h
 .\output\delay.o: C:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\1.0.7\Device\StdPeriph_Driver\inc\stm32f4xx_adc.h
 .\output\delay.o: C:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\1.0.7\Device\Include\stm32f4xx.h
 .\output\delay.o: C:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\1.0.7\Device\StdPeriph_Driver\inc\stm32f4xx_dma.h
