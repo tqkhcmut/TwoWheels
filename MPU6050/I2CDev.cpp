@@ -4,7 +4,7 @@ I2CDev::I2CDev()
 {
 	IsBusy = 0;
 	buff_length = 0;
-	TimeOut = 0;
+	TimeOut = 0x100;
 }
 
 void I2CDev::Init(void)
@@ -13,23 +13,33 @@ void I2CDev::Init(void)
 	I2C_InitTypeDef I2C_InitStructure;
 	
 	// Enable peripherals
-	RCC_APB1PeriphClockCmd(RCC_APB1Periph_I2C2, ENABLE);
-	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOF, ENABLE);
+	RCC_AHB1PeriphClockCmd(I2C_SCL_RCCPERIPH, ENABLE);
+	RCC_AHB1PeriphClockCmd(I2C_SDA_RCCPERIPH, ENABLE);
 	
-	/* GPIOB Configuration:  I2C2 SDA (PF0) and I2C2 SCL (PF1) */
-  GPIO_InitStructure.GPIO_Pin = I2C2_GPIO_PINS;
+	/* GPIO Configuration:  I2C2 SCL (PB10) and I2C2 SDA (PB11) */
+  GPIO_InitStructure.GPIO_Pin = I2C_SDA_PIN;
   GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
   GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
   GPIO_InitStructure.GPIO_OType = GPIO_OType_OD;
-  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP ;
-  GPIO_Init(I2C2_GPIO_BASE, &GPIO_InitStructure); 
+  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
+  GPIO_Init(I2C_SDA_GPIO_BASE, &GPIO_InitStructure); 
+	
+	GPIO_InitStructure.GPIO_Pin = I2C_SCL_PIN;
+  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
+  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
+  GPIO_InitStructure.GPIO_OType = GPIO_OType_OD;
+  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
+  GPIO_Init(I2C_SCL_GPIO_BASE, &GPIO_InitStructure); 
 
 	// Connect to alternate functions
-  GPIO_PinAFConfig(I2C2_GPIO_BASE, I2C2_SDA_PIN_SRC, I2C2_SDA_PIN_AF);
-  GPIO_PinAFConfig(I2C2_GPIO_BASE, I2C2_SCL_PIN_SRC, I2C2_SCL_PIN_AF);
+  GPIO_PinAFConfig(I2C_SDA_GPIO_BASE, I2C_SDA_PIN_SRC, I2C_SDA_PIN_AF);
+  GPIO_PinAFConfig(I2C_SCL_GPIO_BASE, I2C_SCL_PIN_SRC, I2C_SCL_PIN_AF);
+	
+	// Enable peripherals
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_I2C2, ENABLE);
 	
 	// I2C configuration
-	I2C_InitStructure.I2C_Mode = I2C_Mode_SMBusHost;
+	I2C_InitStructure.I2C_Mode = I2C_Mode_I2C;
 	I2C_InitStructure.I2C_DutyCycle = I2C_DutyCycle_2;
 	I2C_InitStructure.I2C_OwnAddress1 = 0x00;
 	I2C_InitStructure.I2C_Ack = I2C_Ack_Enable;
@@ -69,17 +79,25 @@ I2C_RESULT I2CDev::readBytes(uint8_t devAddr, uint8_t regAddr, uint16_t count, u
 	{
 		while (I2C_GetFlagStatus(I2C2,I2C_FLAG_BUSY)) 
 		{
-			if(millis() - tmpTime > TimeOut) return I2C_TIMEOUT;
+			if(millis() - tmpTime > TimeOut) 
+			{
+				IsBusy = 0;
+				return I2C_TIMEOUT;
+			}
 		}
 		
-		/* Enable the I2C peripheral */
+		/* Generate start pulse */
 		I2C_GenerateSTART(I2C2, ENABLE);
 		
 		/* Test on SB Flag */
 		tmpTime = millis();
 		while (!I2C_GetFlagStatus(I2C2,I2C_FLAG_SB)) 
 		{
-			if(millis() - tmpTime > TimeOut) return I2C_TIMEOUT;
+			if(millis() - tmpTime > TimeOut) 
+			{
+				IsBusy = 0;
+				return I2C_TIMEOUT;
+			}
 		}
 		
 		/* Send device address for write */
@@ -89,7 +107,11 @@ I2C_RESULT I2CDev::readBytes(uint8_t devAddr, uint8_t regAddr, uint16_t count, u
 		tmpTime = millis();
 		while (!I2C_CheckEvent(I2C2, I2C_EVENT_MASTER_TRANSMITTER_MODE_SELECTED)) 
 		{
-			if(millis() - tmpTime > TimeOut) return I2C_TIMEOUT;
+			if(millis() - tmpTime > TimeOut) 
+			{
+				IsBusy = 0;
+				return I2C_TIMEOUT;
+			}
 		}
 		
 		/* Send the device's internal address to write to */
@@ -99,7 +121,11 @@ I2C_RESULT I2CDev::readBytes(uint8_t devAddr, uint8_t regAddr, uint16_t count, u
 		tmpTime = millis();
 		while ((!I2C_GetFlagStatus(I2C2,I2C_FLAG_TXE)) && (!I2C_GetFlagStatus(I2C2,I2C_FLAG_BTF)))  
 		{
-			if(millis() - tmpTime > TimeOut) return I2C_TIMEOUT;
+			if(millis() - tmpTime > TimeOut) 
+			{
+				IsBusy = 0;
+				return I2C_TIMEOUT;
+			}
 		}
 		
 		/* Send START condition a second time */  
@@ -109,7 +135,11 @@ I2C_RESULT I2CDev::readBytes(uint8_t devAddr, uint8_t regAddr, uint16_t count, u
 		tmpTime = millis();
 		while (!I2C_GetFlagStatus(I2C2,I2C_FLAG_SB)) 
 		{
-			if(millis() - tmpTime > TimeOut) return I2C_TIMEOUT;
+			if(millis() - tmpTime > TimeOut) 
+			{
+				IsBusy = 0;
+				return I2C_TIMEOUT;
+			}
 		}
 		
 		/* Send Sensor address for read */
@@ -119,7 +149,11 @@ I2C_RESULT I2CDev::readBytes(uint8_t devAddr, uint8_t regAddr, uint16_t count, u
 		tmpTime = millis();
 		while(I2C_GetFlagStatus(I2C2, I2C_FLAG_ADDR) == RESET)
 		{
-			if(millis() - tmpTime > TimeOut) return I2C_TIMEOUT;
+			if(millis() - tmpTime > TimeOut) 
+			{
+				IsBusy = 0;
+				return I2C_TIMEOUT;
+			}
 		}     
 		
 		/*!< Disable Acknowledgement */
@@ -142,7 +176,11 @@ I2C_RESULT I2CDev::readBytes(uint8_t devAddr, uint8_t regAddr, uint16_t count, u
 		tmpTime = millis();
 		while(I2C_GetFlagStatus(I2C2, I2C_FLAG_RXNE) == RESET)
 		{
-			if(millis() - tmpTime > TimeOut) return I2C_TIMEOUT;
+			if(millis() - tmpTime > TimeOut) 
+			{
+				IsBusy = 0;
+				return I2C_TIMEOUT;
+			}
 		}
 		
 		/*!< Read the byte received from the EEPROM */
@@ -152,7 +190,11 @@ I2C_RESULT I2CDev::readBytes(uint8_t devAddr, uint8_t regAddr, uint16_t count, u
 		tmpTime = millis();
 		while(I2C2->CR1 & I2C_CR1_STOP)
 		{
-			if(millis() - tmpTime > TimeOut) return I2C_TIMEOUT;
+			if(millis() - tmpTime > TimeOut) 
+			{
+				IsBusy = 0;
+				return I2C_TIMEOUT;
+			}
 		}  
 		
 		/*!< Re-Enable Acknowledgement to be ready for another reception */
@@ -181,7 +223,11 @@ I2C_RESULT I2CDev::writeBytes(uint8_t devAddr, uint8_t regAddr, uint16_t count, 
 		tmpTime = millis();
 		while (I2C_GetFlagStatus(I2C2,I2C_FLAG_BUSY)) 
 		{
-			if(millis() - tmpTime > TimeOut) return I2C_TIMEOUT;
+			if(millis() - tmpTime > TimeOut) 
+			{
+				IsBusy = 0;
+				return I2C_TIMEOUT;
+			}
 		}
 		
 		
@@ -192,7 +238,11 @@ I2C_RESULT I2CDev::writeBytes(uint8_t devAddr, uint8_t regAddr, uint16_t count, 
 		tmpTime = millis();
 		while (I2C_GetFlagStatus(I2C2,I2C_FLAG_SB) == RESET) 
 		{
-			if(millis() - tmpTime > TimeOut) return I2C_TIMEOUT;
+			if(millis() - tmpTime > TimeOut) 
+			{
+				IsBusy = 0;
+				return I2C_TIMEOUT;
+			}
 		}
 		
 		/* Transmit the slave address and enable writing operation */
@@ -202,7 +252,11 @@ I2C_RESULT I2CDev::writeBytes(uint8_t devAddr, uint8_t regAddr, uint16_t count, 
 		tmpTime = millis();
 		while (!I2C_CheckEvent(I2C2, I2C_EVENT_MASTER_TRANSMITTER_MODE_SELECTED))
 		{
-			if(millis() - tmpTime > TimeOut) return I2C_TIMEOUT;
+			if(millis() - tmpTime > TimeOut) 
+			{
+				IsBusy = 0;
+				return I2C_TIMEOUT;
+			}
 		}
 		
 		/* Transmit the first address for r/w operations */
@@ -212,7 +266,11 @@ I2C_RESULT I2CDev::writeBytes(uint8_t devAddr, uint8_t regAddr, uint16_t count, 
 		tmpTime = millis();
 		while ((!I2C_GetFlagStatus(I2C2,I2C_FLAG_TXE)) || (!I2C_GetFlagStatus(I2C2,I2C_FLAG_BTF)))  
 		{
-			if(millis() - tmpTime > TimeOut) return I2C_TIMEOUT;
+			if(millis() - tmpTime > TimeOut) 
+			{
+				IsBusy = 0;
+				return I2C_TIMEOUT;
+			}
 		}  
 			
 		 /* Transmit the first address for r/w operations */
@@ -222,7 +280,11 @@ I2C_RESULT I2CDev::writeBytes(uint8_t devAddr, uint8_t regAddr, uint16_t count, 
 		tmpTime = millis();
 		while ((!I2C_GetFlagStatus(I2C2,I2C_FLAG_TXE)) && (!I2C_GetFlagStatus(I2C2,I2C_FLAG_BTF)))  
 		{
-			if(millis() - tmpTime > TimeOut) return I2C_TIMEOUT;
+			if(millis() - tmpTime > TimeOut) 
+			{
+				IsBusy = 0;
+				return I2C_TIMEOUT;
+			}
 		} 
 			
 		/*!< Send STOP Condition */
@@ -233,7 +295,11 @@ I2C_RESULT I2CDev::writeBytes(uint8_t devAddr, uint8_t regAddr, uint16_t count, 
 		tmpTime = millis();
 		while(I2C2->CR1 & I2C_CR1_STOP)
 		{
-			if(millis() - tmpTime > TimeOut) return I2C_TIMEOUT;
+			if(millis() - tmpTime > TimeOut) 
+			{
+				IsBusy = 0;
+				return I2C_TIMEOUT;
+			}
 		}  
 			
 		// 
@@ -256,5 +322,62 @@ I2C_RESULT I2CDev::writeBits(uint8_t devAddr, uint8_t regAddr, uint8_t bitMask)
 	else return I2C_FAIL;
 	
 	return writeBytes(devAddr, regAddr, 1, buff);
+}
+
+I2C_RESULT I2CDev::readBits(uint8_t devAddr, uint8_t regAddr, uint8_t bitStart, uint8_t bitLengh, uint8_t * buf)
+{
+	uint8_t bitMask = 1<<bitStart;
+	uint8_t i = 0;
+	while(i < bitLengh - bitStart + 1)
+	{
+		bitMask |= bitStart << i++;
+	}
+	return readBits(devAddr, regAddr, bitMask, buf);
+}
+
+I2C_RESULT I2CDev::readBit(uint8_t devAddr, uint8_t regAddr, uint8_t bitPos, uint8_t * buf)	// level: high or low
+{
+	return readBits(devAddr, regAddr, 1<<bitPos, buf);
+}
+
+I2C_RESULT I2CDev::readByte(uint8_t devAddr, uint8_t regAddr, uint8_t * buf)
+{
+	return readBytes(devAddr, regAddr, 1, buf);
+}
+
+I2C_RESULT I2CDev::writeByte(uint8_t devAddr, uint8_t regAddr, uint8_t _byte)
+{
+	return writeBytes(devAddr, regAddr, 1, &_byte);
+}
+
+I2C_RESULT I2CDev::writeBits(uint8_t devAddr, uint8_t regAddr, uint8_t bitStart, uint8_t bitLengh, uint8_t data)
+{
+	uint8_t bitMask = 1<<bitStart;
+	uint8_t i = 0;
+	while(i < bitLengh - bitStart + 1)
+	{
+		bitMask |= ((bitStart << i++) | data);
+	}
+	
+	return writeBits(devAddr, regAddr, bitMask);
+}
+
+I2C_RESULT I2CDev::writeBit(uint8_t devAddr, uint8_t regAddr, uint8_t bitPos, uint8_t level)
+{
+	uint8_t bitMask = 0;
+	if (level)
+		bitMask = 1<<bitPos;
+	
+	return writeBits(devAddr, regAddr, bitMask);
+}
+
+I2C_RESULT I2CDev::readWord(uint8_t devAddr, uint8_t regAddr, uint16_t * data)
+{
+	return I2C_OK;
+}
+
+I2C_RESULT I2CDev::writeWord(uint8_t devAddr, uint8_t regAddr, uint16_t data)
+{
+	return I2C_OK;
 }
 

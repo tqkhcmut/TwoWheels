@@ -13,6 +13,8 @@
 #include "delay.h"
 #include "Utilities/STM32F4-Discovery/stm32f4_discovery_lis302dl.h"
 #include "Utilities/STM32F4-Discovery/stm32f4_discovery.h"
+#include "MPU6050/I2CDev.h"
+#include "MPU6050/MPU6050.h"
 
 
 /* Exported macro ------------------------------------------------------------*/

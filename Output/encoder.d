@@ -7,8 +7,8 @@
 .\output\encoder.o: C:\Keil_v5\ARM\PACK\ARM\CMSIS\3.20.4\CMSIS\Include\core_cmFunc.h
 .\output\encoder.o: C:\Keil_v5\ARM\PACK\ARM\CMSIS\3.20.4\CMSIS\Include\core_cm4_simd.h
 .\output\encoder.o: C:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\1.0.7\Device\Include\system_stm32f4xx.h
-.\output\encoder.o: C:\Users\Kieu\Desktop\TwoWheels\RTE\Device\STM32F407VG\stm32f4xx_conf.h
-.\output\encoder.o: C:\Users\Kieu\Desktop\TwoWheels\RTE\RTE_Components.h
+.\output\encoder.o: C:\Users\Tra Quang Kieu\Desktop\Current work\TwoWheels\RTE\Device\STM32F407VG\stm32f4xx_conf.h
+.\output\encoder.o: C:\Users\Tra Quang Kieu\Desktop\Current work\TwoWheels\RTE\RTE_Components.h
 .\output\encoder.o: C:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\1.0.7\Device\StdPeriph_Driver\inc\stm32f4xx_adc.h
 .\output\encoder.o: C:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\1.0.7\Device\Include\stm32f4xx.h
 .\output\encoder.o: C:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\1.0.7\Device\StdPeriph_Driver\inc\stm32f4xx_dma.h

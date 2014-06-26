@@ -61,6 +61,12 @@ double kAngle = 0;
 double kAngleRate = 0;
 //Kalman kPitch; // not use
 
+// MPU6050
+int16_t ax, ay, az, gx, gy, gz;
+MPU6050 accelgyro;
+double roll6050, roll6050Ajust, pitch6050;
+bool ConnectionOK = false;
+
 // for balancer PID
 double Bal_PWM = 0;
 double Bal_Setpoint = 0;
@@ -137,6 +143,21 @@ int main(void)
 	// Alpha Beta Filter
 	abf.InitializeAlphaBeta(0, 0.5, 0.1);
 	
+	// MPU6050
+	accelgyro.initialize();
+	ConnectionOK = accelgyro.testConnection();
+	if (ConnectionOK)
+	{
+		STM_EVAL_LEDOff(LED4);
+		STM_EVAL_LEDToggle(LED6);
+		accelgyro.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
+	}
+	else
+	{
+		STM_EVAL_LEDToggle(LED4);
+		ConnectionOK = accelgyro.testConnection();
+	}
+		
 	
 	// Motor Configuration
 	motorL.registerControl(&motor_left_pwm, &ENCL_getValue); // the negative value of pwm make direction in reverse
@@ -174,6 +195,18 @@ int main(void)
   {
 		_delay_ms(1);
 		STM_EVAL_LEDToggle(LED3);
+		
+		// MPU6050
+		if (ConnectionOK)
+		{
+			STM_EVAL_LEDToggle(LED6);
+			accelgyro.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
+		}
+		else
+		{
+			STM_EVAL_LEDToggle(LED4);
+			ConnectionOK = accelgyro.testConnection();
+		}
 			
 		motorR.run(Bal_PWM);
 		motorL.run(Bal_PWM);
