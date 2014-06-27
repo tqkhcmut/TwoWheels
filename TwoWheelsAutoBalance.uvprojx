@@ -220,7 +220,7 @@
             <hadIRAM2>1</hadIRAM2>
             <hadIROM2>0</hadIROM2>
             <StupSel>8</StupSel>
-            <useUlib>0</useUlib>
+            <useUlib>1</useUlib>
             <EndSel>0</EndSel>
             <uLtcg>0</uLtcg>
             <RoSelD>3</RoSelD>
@@ -349,7 +349,7 @@
             <OneElfS>1</OneElfS>
             <Strict>0</Strict>
             <EnumInt>0</EnumInt>
-            <PlainCh>1</PlainCh>
+            <PlainCh>0</PlainCh>
             <Ropi>0</Ropi>
             <Rwpi>0</Rwpi>
             <wLevel>2</wLevel>
@@ -448,6 +448,11 @@
               <FileName>MPU6050.cpp</FileName>
               <FileType>8</FileType>
               <FilePath>.\MPU6050\MPU6050.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f4_i2c.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\MPU6050\stm32f4_i2c.c</FilePath>
             </File>
           </Files>
         </Group>

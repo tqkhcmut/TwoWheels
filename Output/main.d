@@ -35,4 +35,6 @@
 .\output\main.o: Utilities/STM32F4-Discovery/stm32f4_discovery_lis302dl.h
 .\output\main.o: Utilities/STM32F4-Discovery/stm32f4_discovery.h
 .\output\main.o: MPU6050/I2CDev.h
+.\output\main.o: MPU6050/../main.h
+.\output\main.o: MPU6050/stm32f4_i2c.h
 .\output\main.o: MPU6050/MPU6050.h

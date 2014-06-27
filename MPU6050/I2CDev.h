@@ -1,61 +1,82 @@
-#ifndef I2CDev_h
-#define I2CDev_h
+// I2Cdev library collection - Main I2C device class header file
+// Abstracts bit and byte I2C R/W functions into a convenient class
+// 11/1/2011 by Jeff Rowberg <jeff@rowberg.net>
+//
+// Changelog:
+//     2011-11-01 - fix write*Bits mask calculation (thanks sasquatch @ Arduino forums)
+//     2011-10-03 - added automatic Arduino version detection for ease of use
+//     2011-10-02 - added Gene Knight's NBWire TwoWire class implementation with small modifications
+//     2011-08-31 - added support for Arduino 1.0 Wire library (methods are different from 0.x)
+//     2011-08-03 - added optional timeout parameter to read* methods to easily change from default
+//     2011-08-02 - added support for 16-bit registers
+//                - fixed incorrect Doxygen comments on some methods
+//                - added timeout value for read operations (thanks mem @ Arduino forums)
+//     2011-07-30 - changed read/write function structures to return success or byte counts
+//                - made all methods static for multi-device memory savings
+//     2011-07-28 - initial release
 
-#include <inttypes.h>
-#include "stm32f4xx.h"
-// if you have another system timer, comment line below then include it
-#include "../delay.h"
+/* ============================================
+I2Cdev device library code is placed under the MIT license
+Copyright (c) 2011 Jeff Rowberg
 
-#ifndef USE_I2C2
-#define USE_I2C2
-#else
-#error "I2C2 have been used."
-#endif
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
 
-#define I2C_SDA_PIN GPIO_Pin_11
-#define I2C_SDA_PIN_SRC	GPIO_PinSource11
-#define I2C_SDA_PIN_AF		GPIO_AF_I2C2
-#define I2C_SDA_GPIO_BASE GPIOB
-#define I2C_SDA_RCCPERIPH RCC_AHB1Periph_GPIOB
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
 
-#define I2C_SCL_PIN GPIO_Pin_10
-#define I2C_SCL_PIN_SRC	GPIO_PinSource10
-#define I2C_SCL_PIN_AF		GPIO_AF_I2C2
-#define I2C_SCL_GPIO_BASE GPIOB
-#define I2C_SCL_RCCPERIPH RCC_AHB1Periph_GPIOB
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+===============================================
+*/
 
-//#define I2C2_GPIO_PINS (I2C2_SDA_PIN | I2C2_SCL_PIN)
-//#define I2C2_GPIO_BASE GPIOA
+#ifndef _I2CDEV_H_
+#define _I2CDEV_H_
 
-#ifdef I2C_SENSORS
-typedef enum { SENSORS_FAIL = 0, SENSORS_OK, TIMEOUT } I2C_RESULT;
-#else
-typedef enum { I2C_FAIL = 0, I2C_OK, I2C_TIMEOUT } I2C_RESULT;
-#endif
+// -----------------------------------------------------------------------------
+// I2C interface implementation setting
+// -----------------------------------------------------------------------------
+#define I2CDEV_IMPLEMENTATION       I2CDEV_STM32F4_I2C
 
-class I2CDev
-{
-	private:
-	uint8_t buff[16];
-	int32_t buff_length;
-	uint8_t IsBusy;
-	uint32_t TimeOut;
-	
-	public:
-		I2CDev();
-	void Init(void);
-	I2C_RESULT readBits(uint8_t devAddr, uint8_t regAddr, uint8_t bitMask, uint8_t * buf);
-	I2C_RESULT readBits(uint8_t devAddr, uint8_t regAddr, uint8_t bitStart, uint8_t bitLengh, uint8_t * buf);
-	I2C_RESULT readBit(uint8_t devAddr, uint8_t regAddr, uint8_t bitPos, uint8_t * buf);	// level: high or low
-	I2C_RESULT readBytes(uint8_t devAddr, uint8_t regAddr, uint16_t count, uint8_t * buf);
-	I2C_RESULT readByte(uint8_t devAddr, uint8_t regAddr, uint8_t * buf);
-	I2C_RESULT writeBytes(uint8_t devAddr, uint8_t regAddr, uint16_t count, uint8_t * buf);
-	I2C_RESULT writeByte(uint8_t devAddr, uint8_t regAddr, uint8_t _byte);
-	I2C_RESULT writeBits(uint8_t devAddr, uint8_t regAddr, uint8_t bitMask);
-	I2C_RESULT writeBits(uint8_t devAddr, uint8_t regAddr, uint8_t bitStart, uint8_t bitLengh, uint8_t data);
-	I2C_RESULT writeBit(uint8_t devAddr, uint8_t regAddr, uint8_t bitPos, uint8_t level);
-	I2C_RESULT readWord(uint8_t devAddr, uint8_t regAddr, uint16_t * data);
-	I2C_RESULT writeWord(uint8_t devAddr, uint8_t regAddr, uint16_t data);
+#include "../main.h"
+#include "stm32f4_i2c.h"
+
+// 1000ms default read timeout (modify with "I2Cdev::readTimeout = [ms];")
+#define I2CDEV_DEFAULT_READ_TIMEOUT     100
+
+class I2Cdev {
+    public:
+        I2Cdev();
+        
+				static void Init(void);
+        static int8_t readBit(uint8_t devAddr, uint8_t regAddr, uint8_t bitNum, uint8_t *data, uint16_t timeout=I2Cdev::readTimeout);
+        static int8_t readBitW(uint8_t devAddr, uint8_t regAddr, uint8_t bitNum, uint16_t *data, uint16_t timeout=I2Cdev::readTimeout);
+        static int8_t readBits(uint8_t devAddr, uint8_t regAddr, uint8_t bitStart, uint8_t length, uint8_t *data, uint16_t timeout=I2Cdev::readTimeout);
+        static int8_t readBitsW(uint8_t devAddr, uint8_t regAddr, uint8_t bitStart, uint8_t length, uint16_t *data, uint16_t timeout=I2Cdev::readTimeout);
+        static int8_t readByte(uint8_t devAddr, uint8_t regAddr, uint8_t *data, uint16_t timeout=I2Cdev::readTimeout);
+        static int8_t readWord(uint8_t devAddr, uint8_t regAddr, uint16_t *data, uint16_t timeout=I2Cdev::readTimeout);
+        static int8_t readBytes(uint8_t devAddr, uint8_t regAddr, uint8_t length, uint8_t *data, uint16_t timeout=I2Cdev::readTimeout);
+        static int8_t readWords(uint8_t devAddr, uint8_t regAddr, uint8_t length, uint16_t *data, uint16_t timeout=I2Cdev::readTimeout);
+
+        static bool writeBit(uint8_t devAddr, uint8_t regAddr, uint8_t bitNum, uint8_t data);
+        static bool writeBitW(uint8_t devAddr, uint8_t regAddr, uint8_t bitNum, uint16_t data);
+        static bool writeBits(uint8_t devAddr, uint8_t regAddr, uint8_t bitStart, uint8_t length, uint8_t data);
+        static bool writeBitsW(uint8_t devAddr, uint8_t regAddr, uint8_t bitStart, uint8_t length, uint16_t data);
+        static bool writeByte(uint8_t devAddr, uint8_t regAddr, uint8_t data);
+        static bool writeWord(uint8_t devAddr, uint8_t regAddr, uint16_t data);
+        static bool writeBytes(uint8_t devAddr, uint8_t regAddr, uint8_t length, uint8_t *data);
+        static bool writeWords(uint8_t devAddr, uint8_t regAddr, uint8_t length, uint16_t *data);
+
+        static uint16_t readTimeout;
 };
 
-#endif
+#endif /* _I2CDEV_H_ */

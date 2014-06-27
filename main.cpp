@@ -154,8 +154,8 @@ int main(void)
 	}
 	else
 	{
-		STM_EVAL_LEDToggle(LED4);
-		ConnectionOK = accelgyro.testConnection();
+//		STM_EVAL_LEDToggle(LED4);
+//		ConnectionOK = accelgyro.testConnection();
 	}
 		
 	
@@ -197,15 +197,18 @@ int main(void)
 		STM_EVAL_LEDToggle(LED3);
 		
 		// MPU6050
+		ConnectionOK = accelgyro.testConnection();
 		if (ConnectionOK)
 		{
+			STM_EVAL_LEDOff(LED4);
 			STM_EVAL_LEDToggle(LED6);
 			accelgyro.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
 		}
 		else
 		{
-			STM_EVAL_LEDToggle(LED4);
-			ConnectionOK = accelgyro.testConnection();
+//			STM_EVAL_LEDOff(LED6);
+//			STM_EVAL_LEDToggle(LED4);
+//			ConnectionOK = accelgyro.testConnection();
 		}
 			
 		motorR.run(Bal_PWM);
@@ -260,6 +263,11 @@ int main(void)
 	}
 }
 
+
+void TimeOutProcess(void)
+{
+	STM_EVAL_LEDToggle(LED4);
+}
 
 
 /**

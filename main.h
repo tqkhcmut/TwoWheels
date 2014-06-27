@@ -28,4 +28,5 @@ extern Motor motorR;
 
 extern PID Bal_pid;
 
+extern void TimeOutProcess(void);
 #endif

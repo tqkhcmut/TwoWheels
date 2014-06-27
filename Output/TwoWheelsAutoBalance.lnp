@@ -8,6 +8,7 @@
 ".\output\pid_v1.o"
 ".\output\i2cdev.o"
 ".\output\mpu6050.o"
+".\output\stm32f4_i2c.o"
 ".\output\stm32f4_discovery.o"
 ".\output\stm32f4_discovery_lis302dl.o"
 ".\output\misc.o"
@@ -24,7 +25,7 @@
 ".\output\startup_stm32f40_41xxx.o"
 ".\output\system_stm32f4xx.o"
 ".\output\stm32f4xx_flash.o"
---strict --scatter ".\Output\TwoWheelsAutoBalance.sct"
+--library_type=microlib --strict --scatter ".\Output\TwoWheelsAutoBalance.sct"
 --summary_stderr --info summarysizes --map --xref --callgraph --symbols
 --info sizes --info totals --info unused --info veneers
 --list ".\Output\TwoWheelsAutoBalance.map" -o .\Output\TwoWheelsAutoBalance.axf
