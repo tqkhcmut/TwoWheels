@@ -449,6 +449,11 @@
               <FileType>8</FileType>
               <FilePath>.\MPU6050\MPU6050.cpp</FilePath>
             </File>
+            <File>
+              <FileName>stm32f4_i2c.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\MPU6050\stm32f4_i2c.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

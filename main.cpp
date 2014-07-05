@@ -51,7 +51,6 @@ LIS302DL_FilterConfigTypeDef LIS302DL_FilterStruct;
 __IO uint8_t X_Offset, Y_Offset, Z_Offset  = 0x00;
 int32_t Buffer[6];
 
-double pitch = 0;
 double roll = 0;
 double rollAjust = 0;
 
@@ -61,12 +60,6 @@ double kAngle = 0;
 double kAngleRate = 0;
 //Kalman kPitch; // not use
 
-// MPU6050
-int16_t ax, ay, az, gx, gy, gz;
-MPU6050 accelgyro;
-double roll6050, roll6050Ajust, pitch6050;
-bool ConnectionOK = false;
-
 // for balancer PID
 double Bal_PWM = 0;
 double Bal_Setpoint = 0;
@@ -75,9 +68,6 @@ double Bal_PWM_IN = 0;
 // Alpha Beta Filter
 AlphaBetaFilter abf;
 double abf_res;
-
-void GPIO_Configuration(void);
-
 
 
 /* Private functions ---------------------------------------------------------*/
@@ -143,21 +133,6 @@ int main(void)
 	// Alpha Beta Filter
 	abf.InitializeAlphaBeta(0, 0.5, 0.1);
 	
-	// MPU6050
-	accelgyro.initialize();
-	ConnectionOK = accelgyro.testConnection();
-	if (ConnectionOK)
-	{
-		STM_EVAL_LEDOff(LED4);
-		STM_EVAL_LEDToggle(LED6);
-		accelgyro.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
-	}
-	else
-	{
-//		STM_EVAL_LEDToggle(LED4);
-//		ConnectionOK = accelgyro.testConnection();
-	}
-		
 	
 	// Motor Configuration
 	motorL.registerControl(&motor_left_pwm, &ENCL_getValue); // the negative value of pwm make direction in reverse
@@ -170,13 +145,13 @@ int main(void)
 	motorR.PID_Enable = 0;
 	
 	// Configure Balance PID
-	Bal_pid.parameters(&Bal_PWM_IN, &Bal_PWM, &Bal_Setpoint, 18.0, 0.0, 0.0, REVERSE);
+	Bal_pid.parameters(&Bal_PWM_IN, &Bal_PWM, &Bal_Setpoint, 2.5, 0.0, 0.0, REVERSE);
 	Bal_pid.SetMode(AUTOMATIC);
 	Bal_pid.SetSampleTime(1);
 	Bal_pid.SetOutputLimits(-PWM_MAX, PWM_MAX);
 	
 	// enable global pid
-	g_pidEnable = 0;
+	g_pidEnable = 1;
 	
 	motorL.run(2000);
 	motorR.run(2000);
@@ -193,26 +168,10 @@ int main(void)
 	tmpTime = millis();
   while (1)
   {
-		_delay_ms(1);
-		STM_EVAL_LEDToggle(LED3);
-		
-		// MPU6050
-		ConnectionOK = accelgyro.testConnection();
-		if (ConnectionOK)
-		{
-			STM_EVAL_LEDOff(LED4);
-			STM_EVAL_LEDToggle(LED6);
-			accelgyro.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
-		}
-		else
-		{
-//			STM_EVAL_LEDOff(LED6);
-//			STM_EVAL_LEDToggle(LED4);
-//			ConnectionOK = accelgyro.testConnection();
-		}
-			
-		motorR.run(Bal_PWM);
 		motorL.run(Bal_PWM);
+		motorR.run(Bal_PWM);
+		
+		_delay_ms(1);					
 		
 		if (STM_EVAL_PBGetState(BUTTON_USER)) // set new offset
 		{
@@ -223,43 +182,17 @@ int main(void)
 			rollAjust = 0 - roll;
 		}
 		
-		if (millis() - tmpTime >= 10) // 10ms
-		{
-			LIS302DL_ReadACC(Buffer);
+
+		LIS302DL_ReadACC(Buffer);
 			
-			/* Remove the offsets values from data */
-//			Buffer[X_POS] -= X_Offset;
-//			Buffer[Y_POS] -= Y_Offset;
-//			Buffer[Z_POS] -= Z_Offset;
-//			Buffer[Y_POS] = (uint8_t)((int8_t)Buffer[Y_POS] + (int8_t)Y_Offset);
-			
-//			pitch = atanf((int8_t)Buffer[X_POS] / sqrtf((int8_t)Buffer[Y_POS] * (int8_t)Buffer[Y_POS] + 
-//																						(int8_t)Buffer[Z_POS] * (int8_t)Buffer[Z_POS])) * TO_DEGREES;
-			roll = atanf(-Buffer[Y_POS] / sqrtf(Buffer[X_POS] * Buffer[X_POS] + 
+		roll = atanf(-Buffer[Y_POS] / sqrtf(Buffer[X_POS] * Buffer[X_POS] + 
 																						Buffer[Z_POS] * Buffer[Z_POS])) * TO_DEGREES;
-			roll += rollAjust;
+		roll += rollAjust;
 			
-//			// remove unwanted fulse here, I'm not sure why.
-//			if (roll > -2.5 && roll < 2.5)
-//				roll = 0;
-//			else if (roll > 2.5)
-//				roll -= 2.5;
-//			else if (roll < -2.5)
-//				roll += 2.5;
-			
-			kAngle = kRoll.getAngle(roll, 100, (double)0.01);
-			
-			
-			// we need a corrected of convertion
-			// 27*tanf(kAngle/TO_DEGREES) distance in centimet (0.01s)
-			// ==> 27*tanf(kAngle/TO_DEGREES)*10/pi rps
-			// we have 23928 rps in PWM_MAX = 3000
-			// ==>
-			Bal_PWM_IN = ((double)685.486)*tanf(kAngle/TO_DEGREES); // per 10ms
-			tmpTime = millis();
-		}
 		
-		Bal_pid.Compute();
+		kAngle = kRoll.getAngle(roll, 100, (double)0.01);
+		
+		Bal_PWM_IN = 191632*sinf(kAngle/TO_DEGREES);
 	}
 }
 
