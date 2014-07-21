@@ -2,9 +2,9 @@
 
 Motor::Motor(void)
 {
-	PID_P = 1;
-	PID_I = 1;
-	PID_D = 1;
+	PID_P = 0;
+	PID_I = 0;
+	PID_D = 0;
 	
 	
 	PWM_Val = 0.0;
@@ -57,13 +57,15 @@ void Motor::ping(void)
 		{
 			lastTime = millis();
 			Encoder_Value += (*gEncoder)();
-			ENC_Val = (Encoder_Value - preEncoder_Value) * 125.324 / interval; // * 1000 * 3000 / (interval * 23938);
+			ENC_Val = (Encoder_Value - preEncoder_Value);// * 125.3234 / interval; // * 1000 * 3000 / (interval * 23938);
 			preEncoder_Value = Encoder_Value;
 		}
 		_pid.Compute();
 		
-//		(*dir)(gDirective);
-		(*pwm)((int)PWM_Val);
+		// we need to convert ENC per second to pwm value
+		// PWM_Val is number ENC per interval
+		
+		(*pwm)((int)(PWM_Val* 125.3234 / interval));
 	}
 }
 void Motor::run(int speed)
@@ -76,7 +78,7 @@ void Motor::run(int speed)
 	}
 	else
 	{
-//		(*dir)(gDirective);
+		SetPoint = (double) speed;
 		(*pwm)(speed);
 	}
 }	
@@ -97,7 +99,7 @@ void Motor::run(int speed, int time)
 	}
 	else
 	{
-//		(*dir)(gDirective);
+		SetPoint = (double) speed;
 		(*pwm)(speed);
 		
 		while(millis() - capTime < time);
@@ -122,7 +124,7 @@ void Motor::run(int speed, unsigned int numberOfEncoderPulse)
 	else
 	{
 		
-//		(*dir)(gDirective);
+		SetPoint = (double) speed;
 		(*pwm)(speed);
 		
 		while(Encoder_Value - capEncoder < numberOfEncoderPulse);

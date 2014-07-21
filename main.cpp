@@ -94,8 +94,8 @@ int main(void)
 	//
 	motor_init();
 	// Encoder Configuration
-//	Encoders_init();
-//	Encoders_reset();
+	Encoders_init();
+	Encoders_reset();
 	
 	STM_EVAL_PBInit(BUTTON_USER, BUTTON_MODE_GPIO);
 	STM_EVAL_LEDInit(LED3);
@@ -138,38 +138,52 @@ int main(void)
 	motorL.registerControl(&motor_left_pwm, &ENCL_getValue); // the negative value of pwm make direction in reverse
   motorR.registerControl(&motor_right_pwm, &ENCR_getValue);
 	
+	// change P, I, D if you want
+	motorL._pid.SetTunings(1, 10, 0); // P = 1, I = 0, D = 0
+	motorR._pid.SetTunings(1, 10, 0); // P = 1, I = 0, D = 0
+	
+	// change interval time
+	motorL.setInterval(1);
+	motorR.setInterval(1);
+	
+	// change output limited
 	motorL._pid.SetOutputLimits(-PWM_MAX, PWM_MAX);
 	motorR._pid.SetOutputLimits(-PWM_MAX, PWM_MAX);
 	
-	motorL.PID_Enable = 0;
-	motorR.PID_Enable = 0;
+	// set pid enable for each motors
+	// if you want to see encoder value, this setting is required
+	motorL.PID_Enable = 1;
+	motorR.PID_Enable = 1;
+	// max speed 103
 	
 	// Configure Balance PID
-	Bal_pid.parameters(&Bal_PWM_IN, &Bal_PWM, &Bal_Setpoint, 2.5, 0.0, 0.0, REVERSE);
+	Bal_pid.parameters(&Bal_PWM_IN, &Bal_PWM, &Bal_Setpoint, 0.01, 0.5, 0.0000006, REVERSE);//4.0, 0.08, 0.18, REVERSE);
 	Bal_pid.SetMode(AUTOMATIC);
-	Bal_pid.SetSampleTime(1);
+	Bal_pid.SetSampleTime(10);
 	Bal_pid.SetOutputLimits(-PWM_MAX, PWM_MAX);
+
 	
 	// enable global pid
 	g_pidEnable = 1;
 	
-	motorL.run(2000);
-	motorR.run(2000);
-	_delay_ms(1000);
+//	motorL.run(80);
+//	motorR.run(80);
+//	_delay_ms(1000);
+//	
+//	motorL.run(-80);
+//	motorR.run(-80);
+//	_delay_ms(1000);
+//	
+//	motorL.run(0);
+//	motorR.run(0);
+//	_delay_ms(2000);
 	
-	motorL.run(-2000);
-	motorR.run(-2000);
-	_delay_ms(1000);
-	
-	motorL.run(0);
-	motorR.run(0);
-	_delay_ms(1000);
-	
-	tmpTime = millis();
-  while (1)
+	tmpTime = millis();	
+  
+	while (1)
   {
-		motorL.run(Bal_PWM);
-		motorR.run(Bal_PWM);
+		motorL.run(((double)52237.6)*sinf(Bal_PWM/TO_DEGREES));	// motor pid setpoint
+		motorR.run(((double)52237.6)*sinf(Bal_PWM/TO_DEGREES));	// motor pid setpoint
 		
 		_delay_ms(1);					
 		
@@ -188,11 +202,13 @@ int main(void)
 		roll = atanf(-Buffer[Y_POS] / sqrtf(Buffer[X_POS] * Buffer[X_POS] + 
 																						Buffer[Z_POS] * Buffer[Z_POS])) * TO_DEGREES;
 		roll += rollAjust;
+		
+//		roll *= 2;
 			
 		
-		kAngle = kRoll.getAngle(roll, 100, (double)0.01);
+		kAngle = kRoll.getAngle(roll, 1000, (double)0.001);
 		
-		Bal_PWM_IN = 191632*sinf(kAngle/TO_DEGREES);
+		Bal_PWM_IN = kAngle; //((double)1701.049/10)*sinf(kAngle/TO_DEGREES); // ENC/ms - real speed
 	}
 }
 
