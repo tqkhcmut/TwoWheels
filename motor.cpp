@@ -2,9 +2,9 @@
 
 Motor::Motor(void)
 {
-	PID_P = 0;
-	PID_I = 0;
-	PID_D = 0;
+	PID_P = 1;
+	PID_I = 1;
+	PID_D = 1;
 	
 	
 	PWM_Val = 0.0;
